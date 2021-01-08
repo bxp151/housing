@@ -65,3 +65,4 @@ et.ascores(train.drop("cmedv", axis = 1), train["cmedv"]) # confirming rm, lstat
 # Prep - center, scale, NZV
 
 
+
