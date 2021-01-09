@@ -42,10 +42,9 @@ The overall approach to building the pricing model is as follows:
 5. Feature engineering
 6. Build and analyze secondary models
 7. Final predictions using test set
-
 </br>
 
-##Data Description
+## Data Description
 
 The original data are 506 observations on 14 variables. cmedv is the target variable
 
