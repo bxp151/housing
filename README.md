@@ -1,5 +1,7 @@
 # Predicting median housing prices in Boston
 
+</br>
+
 ## Objective
 The objective is to predict median home prices in Boston based on data published in 1978.  
 
@@ -40,6 +42,8 @@ The overall approach to building the pricing model is as follows:
 5. Feature engineering
 6. Build and analyze secondary models
 7. Final predictions using test set
+
+</br>
 
 ##Data Description
 
