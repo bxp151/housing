@@ -70,6 +70,6 @@ tract	| census tract
 lon	| longitude of census tract
 lat	| latitude of census tract
 
-##Usage Instructions
+## Usage Instructions
 
 Clone the repo by doing ----
