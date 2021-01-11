@@ -36,35 +36,35 @@ def load_data(file = HOME_DIR + DATA_DIR + "/housing.txt"):
     df = pd.read_table(file, skiprows= 9, encoding="cp1252")
     return df
 
-df = load_data()
+data = load_data()
 
 #%% Initial Exploration
 
-len(df), len(df.columns)
+len(data), len(data.columns)
 # (506, 21)
 
 # Feature Names, first 5 obs., types, # Levels for factor
-et.peek(df)
+et.peek(data)
 
-df["TOWN"].value_counts()
-df["ZN"].value_counts()
-df["CHAS"].value_counts()
-df["RAD"].value_counts()
-df["INDUS"].value_counts()
-df["NOX"].value_counts()
-df["TAX"].value_counts()
-df["PTRATIO"].value_counts()
+data["TOWN"].value_counts()
+data["ZN"].value_counts()
+data["CHAS"].value_counts()
+data["RAD"].value_counts()
+data["INDUS"].value_counts()
+data["NOX"].value_counts()
+data["TAX"].value_counts()
+data["PTRATIO"].value_counts()
 
 # def  factor: CHAS, RAD
 # lowercase
-# drop: OBS, TOWN, TOWN#, MEDV
+# drop: OBS, TOWN, TOWN#, MEDV, TRACT
 
-et.explore(df)
+et.explore(data)
 # no n/a, no inf, CHAS 93% zero
 
-desc = df.describe()
-df.hist()
-skew = et.skewstats(df)
+desc = data.describe()
+data.hist()
+skew = et.skewstats(data)
 skew["skewness"]= skew["skewness"].abs()
 skew.sort_values(by=["skewness"], ascending=False)
 
@@ -81,7 +81,7 @@ skew.sort_values(by=["skewness"], ascending=False)
 # will likley use center, scaling for certain techniques
 
 (
- pn.ggplot(df) +
+ pn.ggplot(data) +
  pn.aes(x = 'CMEDV') +
  pn.geom_histogram(bins = 30) +
  pn.labs(x = 'Corrected median price of homes 000s',
@@ -91,10 +91,11 @@ skew.sort_values(by=["skewness"], ascending=False)
 
 
 
-df.plot(kind="scatter", x = "LON", y = "LAT", alpha = 0.4, 
+data.plot(kind="scatter", x = "LON", y = "LAT", alpha = 0.4, 
         c="CMEDV", cmap=plt.get_cmap("jet"), colorbar=True )
 
-# there doesn't seem to be any immediate pattern from CMEDV based on the map.  
+# seems that houses west of the city between certain longitues are more
+# expensive generally  
 
 
 #%% Select Techniques:
@@ -115,16 +116,85 @@ df.plot(kind="scatter", x = "LON", y = "LAT", alpha = 0.4,
 
 #%% Initial Cleanup
 
-def clean(x):
+def clean(df):
     # drop: OBS, TOWN, TOWN#, MEDV
-    x = x.drop(["OBS.", "TOWN", "TOWN#", "MEDV"], axis = 1)
+    df = df.drop(["OBS.", "TOWN", "TRACT", "TOWN#", "MEDV"], axis = 1)
     # lowercase cols
-    x.columns = map(str.lower, x.columns)
+    df.columns = map(str.lower, df.columns)
     # factor: CHAS, RAD
-    return x
+    df[["chas","rad"]] = df[["chas","rad"]].astype('category')
+    return df
 
- 
-clean(df)
+
+
+df = clean(data)
+
+et.peek(df)
+
+#%% Split data
+
+def strat_split(df, target, quantiles = [0, 0.25,0.5,0.75,1]):
+    # Python doesn't have a built in mechanism for stratification in regression
+    # Specifiy the quantiles and target to create stratified sample
+    
+    # calculate the quantiles for the target
+    q = df[target].quantile(quantiles)
+    
+    # create label names for the new category
+    l = list(range(1,len(quantiles),1))
+    
+    # create the new target category
+    df["target_cat"] = pd.cut(df[target], bins = q, right=True,
+                             labels = l, include_lowest = True) 
+    traintest = StratifiedShuffleSplit(n_splits = 1, test_size=0.2, random_state=42)
+
+    for train_idx, test_idx in traintest.split(df, df["target_cat"]):
+        train= df.loc[train_idx]
+        test = df.loc[test_idx]
+
+    train, test = train.drop(['target_cat'], axis = 1), test.drop(['target_cat'], axis = 1)  
+
+    trainX, trainY = train.drop("cmedv", axis = 1), train["cmedv"]
+    testX, testY = test.drop("cmedv", axis = 1), test["cmedv"]    
+    
+    return trainX, trainY,testX, testY 
+
+# use more quantiles in the upper range due to the rareness of those observations
+trainX, trainY,testX, testY  = strat_split(df, target = "cmedv", 
+                          quantiles = [0, 0.1, 0.2, 0.3, 0.4, 
+                                       0.5, 0.6, 0.7, 0.8, 0.85, 
+                                       0.9, 0.95, 1])
+
+
+# verify cmedv looks similar between train/test
+(
+ pn.ggplot(pd.DataFrame(trainY)) +
+ pn.aes(x="cmedv") +
+ pn.geom_histogram(bins = 30)
+ )
+
+(
+ pn.ggplot(pd.DataFrame(testY)) +
+ pn.aes(x="cmedv") +
+ pn.geom_histogram(bins = 30)
+ )
+
+
+#%% Naive Baseline - calculate RMSE using mean(cmedv) as the prediction
+
+naive = pd.DataFrame({'obs': trainY,
+                      'pred': np.mean(trainY)
+                      })
+
+naive["residsq"] = (naive["obs"] - naive["pred"])**2
+
+naiveRMSE = np.sqrt(sum(naive["residsq"])/len(naive))
+
+#%% Black box baseline - Use random forest with defaults
+
+# https://scikit-learn.org/stable/modules/ensemble.html#forest
+
+
 
 
 
