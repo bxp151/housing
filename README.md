@@ -99,4 +99,6 @@ lat	| latitude of census tract | yes
 
 ## Usage Instructions
 
-1. Open housing.py and set 
+1. Open housing.py and set HOME_DIR to wherever you cloned the repository
+2. In the "Execute target shuffling" block, I commented out the code because it takes several hours to run.  The results of the execution will be loaded automatically into gb_scores
+3. 
