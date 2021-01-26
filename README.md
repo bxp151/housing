@@ -42,7 +42,7 @@ In order to validate the model, we used target shuffling which shows the probabi
         4. Plot the distribution of scores 
 </br>
 
-####Since the best model performed better than every target permutation model, there is a 0 in 100K probability that the model's results occured by chance
+Since the best model performed better than every target permutation model, there is a 0 in 100K probability that the model's results occured by chance
 
 ![](./images/fig2.png)
 
@@ -99,6 +99,7 @@ lat	| latitude of census tract | yes
 
 ## Usage Instructions
 
-1. Open housing.py and set HOME_DIR to wherever you cloned the repository
-2. In the "Execute target shuffling" block, I commented out the code because it takes several hours to run.  The results of the execution will be loaded automatically into gb_scores
-3. 
+
+1. [Clone the repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)
+2. Open housing.py and set HOME_DIR to the directory path where you cloned the repository
+3. In housing.py, I commented out the "Execute target shuffling" block because it takes several hours to run.  The results of the execution will be loaded automatically into gb_scores
