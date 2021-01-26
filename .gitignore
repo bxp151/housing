@@ -5,6 +5,9 @@ __pycache__/
 
 # Mac OSX specific
 **/.DS_Store
+**/builds
+**/data
+**/reference
 
 # C extensions
 *.so
